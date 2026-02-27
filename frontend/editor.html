@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PeerDebug | Code Editor</title>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <style>
+/* --- YOUR EXACT CSS (UNCHANGED) --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Consolas, Monaco, monospace;
+}
+
+body {
+  height: 100vh;
+  background: radial-gradient(circle at top, #183a44, #071822);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 18px 30px;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(15px);
+  font-size: 22px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header span {
+  font-size: 14px;
+  opacity: 0.8;
+  font-weight: normal;
+}
+
+.container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  padding: 20px;
+  perspective: 1400px;
+}
+
+.editor-box, .output-box {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(18px);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+button {
+  background: #2f6dff;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-left: 6px;
+}
+
+textarea {
+  flex: 1;
+  background: #0d1f2a;
+  color: #e6edf3;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.output {
+  flex: 1;
+  background: #0d1f2a;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 13px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+#lockedLine {
+  background: #020617;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+footer {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.6;
+}
+  </style>
+</head>
+
+<body>
+
+<header>
+  🚀 PeerDebug <span>Live Code Editor</span>
+  <a href="/app.html">← Back to Chat</a>
+</header>
+
+<div class="container">
+
+  <div class="editor-box">
+    <div class="editor-header">
+      <strong>Editor</strong>
+      <div>
+        <button onclick="clearCode()">Clear</button>
+        <button onclick="autoFix()">Fix Code</button>
+      </div>
+    </div>
+
+    <div id="lockedLine">
+      Welcome to PeerDebug 🚀
+    </div>
+
+    <textarea id="code" placeholder="// write your JavaScript code here"></textarea>
+  </div>
+
+  <div class="output-box">
+    <div class="editor-header">
+      <strong>Output</strong>
+      <button onclick="runCode()">Run</button>
+    </div>
+
+    <div class="output" id="output">
+      ▶ Run your code to see output here
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  PeerDebug • Real-time collaborative debugging
+</footer>
+
+<script>
+
+/* ======================
+   YOUR ORIGINAL LOGIC
+   ====================== */
+
+let lastError = null;
+
+function runCode() {
+  const userCode = document.getElementById("code").value;
+  const finalCode =
+    'console.log("Welcome to PeerDebug 🚀");\n' + userCode;
+
+  const output = document.getElementById("output");
+  output.textContent = "";
+  let logs = "";
+
+  const originalLog = console.log;
+
+  try {
+    console.log = (...args) => {
+      logs += args.join(" ") + "\n";
+    };
+
+    eval(finalCode);
+    output.textContent = logs || "✅ Code executed successfully.";
+    lastError = null;
+  }
+  catch (err) {
+    lastError = err;
+    output.textContent =
+      "❌ ERROR DETECTED\n\n" +
+      "Type: " + err.name + "\n" +
+      "Message: " + err.message;
+  }
+  finally {
+    console.log = originalLog;
+  }
+}
+
+function clearCode() {
+  document.getElementById("code").value = "";
+  document.getElementById("output").textContent =
+    "▶ Run your code to see output here";
+  lastError = null;
+}
+
+function autoFix() {
+  const codeArea = document.getElementById("code");
+  const output = document.getElementById("output");
+
+  if (!lastError) {
+    output.textContent = "ℹ️ No error detected. Nothing to fix.";
+    return;
+  }
+
+  let code = codeArea.value;
+
+  if (lastError.name === "ReferenceError") {
+    const m = lastError.message.match(/(\w+) is not defined/);
+    if (m) {
+      const v = m[1];
+      code = `let ${v} = 0;\n` + code;
+      output.textContent =
+        `🛠 Auto Fix Applied:\nDeclared variable "${v}"`;
+    }
+  } else {
+    output.textContent =
+      "⚠️ Unable to auto-fix this error.\nTry manual correction.";
+  }
+
+  codeArea.value = code;
+  lastError = null;
+}
+
+/* ======================
+   FIXED CHAT CONNECTION
+   ====================== */
+
+const socket = io();
+
+const params = new URLSearchParams(window.location.search);
+const roomId = params.get("room");
+const userName = params.get("user");
+
+// Proper room join
+if (roomId && userName) {
+  socket.emit("room:join", {
+    roomId: roomId,
+    userName: userName
+  });
+
+  socket.emit("chat:message", {
+    roomId: roomId,
+    message: "started debugging"
+  });
+}
+
+// Code sync
+const codeArea = document.getElementById("code");
+
+codeArea.addEventListener("input", () => {
+  if (roomId) {
+    socket.emit("code:change", {
+      roomId: roomId,
+      code: codeArea.value
+    });
+  }
+});
+
+socket.on("code:update", (code) => {
+  codeArea.value = code;
+});
+
+</script>
+
+</body>
+</html>

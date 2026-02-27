@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cute Lamp Secure Login</title>
+
+<script src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
+}
+
+body{
+  height:100vh;
+  background:#0f172a;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  transition:background 0.8s ease;
+  color:white;
+}
+
+/* ================= LAMP ================= */
+
+.lamp-container{
+  position:absolute;
+  top:10%;
+  left:15%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  cursor:pointer;
+  z-index:20;
+}
+
+.wire{
+  width:4px;
+  height:80px;
+  background:#555;
+}
+
+.lamp{
+  width:120px;
+  height:90px;
+  background:#ddd;
+  border-radius:60px 60px 30px 30px;
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  transition:0.4s ease;
+}
+
+.lamp::before{
+  content:"";
+  position:absolute;
+  bottom:-40px;
+  width:20px;
+  height:40px;
+  background:#ddd;
+}
+
+.stand{
+  width:80px;
+  height:15px;
+  background:#ddd;
+  border-radius:20px;
+  margin-top:45px;
+}
+
+.light-glow{
+  position:absolute;
+  top:150px;
+  width:350px;
+  height:350px;
+  background:radial-gradient(circle, rgba(255,223,100,0.6), transparent 70%);
+  border-radius:50%;
+  opacity:0;
+  transition:0.8s ease;
+  pointer-events:none;
+}
+
+.eyes{
+  position:absolute;
+  top:35px;
+  width:100%;
+  display:flex;
+  justify-content:space-around;
+  padding:0 25px;
+}
+.eye{
+  width:10px;
+  height:10px;
+  background:#333;
+  border-radius:50%;
+}
+.smile{
+  position:absolute;
+  bottom:20px;
+  width:40px;
+  height:20px;
+  border-bottom:3px solid #333;
+  border-radius:0 0 40px 40px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+/* ================= LOGIN ================= */
+
+.login-card{
+  width:400px;
+  padding:30px;
+  background:rgba(30,41,59,0.95);
+  border-radius:20px;
+  text-align:center;
+  box-shadow:0 0 40px rgba(255,255,255,0.1);
+  opacity:0;
+  transform:scale(0.8);
+  transition:0.6s ease;
+}
+
+.login-card h2{
+  margin-bottom:20px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin-bottom:15px;
+  border-radius:8px;
+  border:none;
+  outline:none;
+}
+
+button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:linear-gradient(135deg,#ff758c,#ff7eb3);
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  margin-bottom:10px;
+}
+
+video{
+  width:100%;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+#status{
+  margin-top:10px;
+  font-size:14px;
+}
+
+/* ACTIVE STATE */
+body.light-on{
+  background:#1e293b;
+}
+body.light-on .light-glow{
+  opacity:1;
+}
+body.light-on .login-card{
+  opacity:1;
+  transform:scale(1);
+}
+body.light-on .lamp{
+  background:#fff3b0;
+  box-shadow:0 0 30px #ffd700;
+}
+</style>
+</head>
+
+<body>
+
+<div class="lamp-container" onclick="toggleLamp()">
+  <div class="wire"></div>
+  <div class="lamp">
+    <div class="eyes">
+      <div class="eye"></div>
+      <div class="eye"></div>
+    </div>
+    <div class="smile"></div>
+  </div>
+  <div class="stand"></div>
+</div>
+
+<div class="light-glow"></div>
+
+<div class="login-card">
+  <h2>Secure Login</h2>
+
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+
+  <button onclick="passwordLogin()">Login With Password</button>
+  <button onclick="startLogin()">Login With Face</button>
+
+  <video id="video" autoplay muted></video>
+
+  <div id="status">Waiting...</div>
+</div>
+
+<script>
+const video = document.getElementById("video");
+const statusText = document.getElementById("status");
+
+let stream = null;
+
+/* Lamp Toggle */
+function toggleLamp(){
+  document.body.classList.toggle("light-on");
+
+  if(!document.body.classList.contains("light-on")){
+    if(stream){
+      stream.getTracks().forEach(track => track.stop());
+    }
+    statusText.innerText = "Lamp Off";
+  }
+}
+
+/* PASSWORD LOGIN */
+function passwordLogin(){
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if(!username || !password){
+    alert("Enter username and password");
+    return;
+  }
+
+  const storedPassword = localStorage.getItem("pass_" + username);
+
+  if(!storedPassword){
+    localStorage.setItem("pass_" + username, password);
+    statusText.innerText = "Password Registered!";
+  } else {
+    if(storedPassword === password){
+      statusText.innerText = "Password Matched! logged in...";
+      setTimeout(()=>{
+        window.location.href="app.html";
+      },1200);
+    } else {
+      statusText.innerText = "Wrong Password!";
+    }
+  }
+}
+
+/* FACE LOGIN */
+async function loadModels(){
+  await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+  await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
+  await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
+}
+
+async function startCamera(){
+  stream = await navigator.mediaDevices.getUserMedia({video:true});
+  video.srcObject = stream;
+}
+
+async function startLogin(){
+  const username = document.getElementById("username").value.trim();
+  if(!username) return alert("Enter username first");
+
+  statusText.innerText="Loading...";
+  await loadModels();
+  await startCamera();
+
+  video.addEventListener("play",()=>{
+    const interval = setInterval(async()=>{
+      const detection = await faceapi
+        .detectSingleFace(video,new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if(!detection) return;
+
+      clearInterval(interval);
+
+      const currentDescriptor = detection.descriptor;
+      const storedData = localStorage.getItem("face_" + username);
+
+      if(!storedData){
+        localStorage.setItem("face_" + username,
+          JSON.stringify(Array.from(currentDescriptor)));
+        statusText.innerText="Face Registered!";
+      } else {
+        const savedDescriptor = new Float32Array(JSON.parse(storedData));
+        const distance = faceapi.euclideanDistance(savedDescriptor,currentDescriptor);
+
+        if(distance < 0.5){
+          statusText.innerText="Face Matched! logged in...";
+          setTimeout(()=>{
+            window.location.href="app.html";
+          },1200);
+        } else {
+          statusText.innerText="Face Not Matching!";
+        }
+      }
+    },1000);
+  });
+}
+</script>
+
+</body>
+</html>

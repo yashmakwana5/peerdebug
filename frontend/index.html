@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PeerDebug — Real-Time Debugging Platform</title>
+
+
+<style>
+:root {
+  --bg1: #020617;
+  --bg2: #0f172a;
+  --accent: #38bdf8;
+  --accent2: #6366f1;
+  --glass: rgba(255,255,255,0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inter, system-ui, Arial;
+}
+
+body {
+  background:
+    radial-gradient(circle at 20% 10%, #1e3a8a, transparent 50%),
+    radial-gradient(circle at 80% 30%, #0ea5e9, transparent 40%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+  color: #e5e7eb;
+  overflow-x: hidden;
+}
+
+/* ---------- HEADER ---------- */
+header {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 80px;
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+  background: rgba(2,6,23,0.6);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+header h1 {
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+header span {
+  color: var(--accent);
+}
+
+header nav a {
+  margin-left: 30px;
+  color: #cbd5f5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+header nav a:hover {
+  color: white;
+}
+
+/* ---------- HERO (CENTERED) ---------- */
+.hero {
+  min-height: 100vh;
+  padding-top: 140px;
+  padding-left: 80px;
+  padding-right: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero-text {
+  max-width: 900px;
+}
+
+.hero-text h2 {
+  font-size: 64px;
+  line-height: 1.1;
+  margin-bottom: 30px;
+}
+
+.hero-text h2 span {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  background-clip: text;              /* Standard */
+  -webkit-background-clip: text;      /* WebKit browsers */
+  color: transparent;                 /* Standard way */
+}
+
+.hero-text p {
+  font-size: 20px;
+  opacity: 0.85;
+  margin-bottom: 50px;
+}
+
+.hero-buttons button {
+  padding: 18px 40px;
+  font-size: 16px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #020617;
+  font-weight: bold;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+}
+
+/* ---------- STATS ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 30px;
+  padding: 100px 80px;
+}
+
+.stat {
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.stat h3 {
+  font-size: 42px;
+  color: var(--accent);
+}
+
+.stat p {
+  margin-top: 10px;
+  opacity: 0.8;
+}
+
+/* ---------- FEATURES ---------- */
+.features {
+  padding: 120px 80px;
+}
+
+.features h2 {
+  text-align: center;
+  font-size: 48px;
+  margin-bottom: 70px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 40px;
+}
+
+.feature {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  padding: 40px;
+  border-radius: 24px;
+  transition: transform 0.3s;
+}
+
+.feature:hover {
+  transform: translateY(-10px);
+}
+
+.feature h3 {
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+.feature p {
+  opacity: 0.85;
+}
+
+/* ---------- CTA ---------- */
+.cta {
+  padding: 160px 80px;
+  text-align: center;
+  background: linear-gradient(180deg, transparent, rgba(15,23,42,0.9));
+}
+
+.cta h2 {
+  font-size: 56px;
+  margin-bottom: 30px;
+}
+
+.cta p {
+  font-size: 20px;
+  opacity: 0.8;
+  margin-bottom: 50px;
+}
+
+.cta button {
+  padding: 18px 40px;
+  font-size: 18px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #020617;
+  font-weight: bold;
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+  padding: 40px;
+  text-align: center;
+  opacity: 0.5;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px) {
+  header {
+    padding: 0 30px;
+  }
+
+  .hero-text h2 {
+    font-size: 44px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* ===============================
+   ADVANCED 3D + PRO EFFECTS
+================================ */
+
+/* Background depth overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(59,130,246,0.25), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(14,165,233,0.3), transparent 45%);
+  z-index: -1;
+}
+
+/* Header depth */
+header {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* Logo glow */
+header h1 span {
+  text-shadow: 0 0 12px rgba(56,189,248,0.65);
+}
+
+/* HERO SECTION FLOAT EFFECT */
+.hero-text {
+  transform: translateZ(0);
+  animation: floatHero 6s ease-in-out infinite;
+}
+
+@keyframes floatHero {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Main heading glow */
+.hero-text h2 {
+  text-shadow:
+    0 10px 30px rgba(0,0,0,0.6),
+    0 0 40px rgba(56,189,248,0.35);
+}
+
+/* Button 3D depth */
+.btn-primary {
+  box-shadow:
+    0 10px 30px rgba(99,102,241,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow:
+    0 20px 60px rgba(99,102,241,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* Secondary link hover */
+.btn-secondary {
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.btn-secondary:hover {
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Card depth (stats & features) */
+.stat,
+.feature {
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.45),
+    inset 0 1px 1px rgba(255,255,255,0.12);
+}
+
+.feature:hover {
+  transform: translateY(-12px) rotateX(6deg);
+}
+
+/* CTA section glow */
+.cta {
+  box-shadow: inset 0 30px 80px rgba(0,0,0,0.7);
+}
+
+.cta button {
+  box-shadow:
+    0 15px 40px rgba(56,189,248,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.cta button:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+/* Explore button variant */
+.btn-explore {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  margin-left: 16px;
+}
+
+/* Optional hover variation */
+.btn-explore:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow:
+    0 20px 60px rgba(56,189,248,0.65);
+}
+/* ================= HERO ANIMATED CHARACTERS ================= */
+
+.hero-illustrations {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  margin-top: 50px;
+  perspective: 1000px;
+}
+
+.dev {
+  position: absolute;
+  width: 140px;
+  animation: float 6s ease-in-out infinite;
+  filter: drop-shadow(0 25px 40px rgba(0,0,0,0.4));
+}
+
+.dev1 {
+  left: 5%;
+  animation-delay: 0s;
+}
+
+.dev2 {
+  right: 10%;
+  top: 30px;
+  animation-delay: 1.5s;
+}
+
+.dev3 {
+  left: 40%;
+  bottom: 0;
+  animation-delay: 3s;
+}
+
+/* Floating animation */
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotateX(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotateX(8deg);
+  }
+  100% {
+    transform: translateY(0px) rotateX(0deg);
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🚀 Peer<span>Debug</span></h1>
+  <nav>
+    <a href="#">Platform</a>
+    <a href="#">Features</a>
+    <a href="#">Docs</a>
+    <a href="/app.html">Enter</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-text">
+    <h2>Debug <span>Together</span><br>In Real Time</h2>
+    <p>
+      PeerDebug is a collaborative debugging platform built for developers
+      who solve problems faster together.
+    </p>
+    <div class="hero-buttons">
+  <button class="btn-primary" onclick="location.href='/login.html'">
+  Enter PeerDebug
+</button>
+  <button class="btn-primary btn-explore" onclick="location.href='#features'">
+    Explore Platform
+  </button>
+</div>
+
+</section>
+
+<section class="stats">
+  <div class="stat"><h3>⚡</h3><p>Real-time updates</p></div>
+  <div class="stat"><h3>∞</h3><p>Unlimited rooms</p></div>
+  <div class="stat"><h3>🧑‍💻</h3><p>Live collaboration</p></div>
+  <div class="stat"><h3>🔒</h3><p>Session based</p></div>
+</section>
+
+<section class="features" id="features">
+
+  <h2>Built for Modern Developers</h2>
+  <div class="feature-grid">
+    <div class="feature">
+      <h3>Live Chat</h3>
+      <p>Discuss issues instantly with synced room members.</p>
+    </div>
+    <div class="feature">
+      <h3>Online Presence</h3>
+      <p>See who joined, who left, and who’s active.</p>
+    </div>
+    <div class="feature">
+      <h3>Code Collaboration</h3>
+      <p>Run, share, debug, and experiment together.</p>
+    </div>
+  </div>
+</section>
+
+
+
+<footer>
+  © PeerDebug • Real-Time Collaborative Debugging
+</footer>
+
+</body>
+</html>
